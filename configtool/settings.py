@@ -29,6 +29,12 @@ class Settings:
     self.maxAdc = 1023
     self.minAdc = 1
 
+    self.__boards__ = []
+    self.__printers__ = []
+    self.protectedfiles = []
+
+    self.thermistorpresets = {}
+
     self.cfg = ConfigParser.ConfigParser()
     self.cfg.optionxform = str
 
@@ -70,6 +76,32 @@ class Settings:
     else:
       print "Missing %s section - assuming defaults." % self.section
 
+    section = "protectedfiles"
+    if self.cfg.has_section(section):
+      for opt, value in self.cfg.items(section):
+	value = value.strip().replace(" ", "").replace("\n", "")
+	if opt == "boards":
+          self.__boards__ = value.split(",")
+	elif opt == "printers":
+          self.__printers__ = value.split(",")
+
+    for b in self.__boards__:
+      self.protectedfiles.append("board.%s.h" % b)
+
+    for p in self.__printers__:
+      self.protectedfiles.append("printer.%s.h" % p)
+
+    section = "thermistors"
+    if self.cfg.has_section(section):
+      for opt, value in self.cfg.items(section):
+	value = value.strip().replace(" ", "")
+	vl = value.split(",")
+	if len(vl) != 4 and len(vl) != 7:
+	  print "Invalid entry for thermistor %s." % opt
+
+	else:
+	  self.thermistorpresets[opt] = vl
+
   def saveSettings(self):
     self.section = "configtool"
     try:
@@ -89,6 +121,27 @@ class Settings:
     self.cfg.set(self.section, "maxadc", str(self.maxAdc))
     self.cfg.set(self.section, "minadc", str(self.minAdc))
     self.cfg.set(self.section, "uploadspeed", str(self.uploadspeed))
+
+    section = "protectedfiles"
+    try:
+      self.cfg.add_section(section)
+    except ConfigParser.DuplicateSectionError:
+      pass
+
+    if len(self.__boards__) > 0:
+      self.cfg.set(section, "boards", ",".join(self.__boards__))
+
+    if len(self.__printers__) > 0:
+      self.cfg.set(section, "printers", ",".join(self.__printers__))
+
+    section = "thermistors"
+    try:
+      self.cfg.add_section(section)
+    except ConfigParser.DuplicateSectionError:
+      pass
+
+    for t in self.thermistorpresets.keys():
+      self.cfg.set(section, t, ",".join(self.thermistorpresets[t]))
 
     try:
       cfp = open(self.inifile, 'wb')

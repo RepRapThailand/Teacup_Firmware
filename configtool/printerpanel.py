@@ -10,7 +10,6 @@ from configtool.data import (defineValueFormat, defineBoolFormat, reCommDefBL,
 from configtool.mechanicalpage import MechanicalPage
 from configtool.accelerationpage import AccelerationPage
 from configtool.miscellaneouspage import MiscellaneousPage
-from configtool.protectedfiles import protectedFiles
 
 
 class PrinterPanel(wx.Panel):
@@ -248,7 +247,7 @@ class PrinterPanel(wx.Panel):
           if len(t) == 1:
             self.cfgValues[t[0]] = True
 
-    if os.path.basename(fn) in protectedFiles:
+    if os.path.basename(fn) in self.settings.protectedfiles:
       self.parent.enableSavePrinter(False, True)
       self.protFileLoaded = True
     else:
@@ -296,7 +295,7 @@ class PrinterPanel(wx.Panel):
     return rc
 
   def saveConfigFile(self, path):
-    if os.path.basename(path) in protectedFiles:
+    if os.path.basename(path) in self.settings.protectedfiles:
       dlg = wx.MessageDialog(self, "Unable to overwrite %s." % path,
                              "Protected file error", wx.OK + wx.ICON_ERROR)
       dlg.ShowModal()

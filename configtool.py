@@ -297,7 +297,7 @@ class ConfigFrame(wx.Frame):
       cfgBuffer = list(open(path))
     except:
       self.message("Unable to process config file %s." % fn, "File error")
-      return
+      return None, None
 
     for ln in cfgBuffer:
       if not ln.lstrip().startswith("#include"):
@@ -339,6 +339,8 @@ class ConfigFrame(wx.Frame):
     if self.pgBoard.isModified() and self.pgBoard.isValid():
       if not self.pgBoard.saveConfigFile(bfn):
         return False
+    else:
+      self.pgBoard.generateTempTables()
 
     pfn = self.pgPrinter.getFileName()
     if self.pgPrinter.isModified() and self.pgPrinter.isValid():
